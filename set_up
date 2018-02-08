@@ -1,0 +1,167 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 11 15:32:51 2018
+
+@author: fabian
+"""
+#%%
+#setup
+
+
+"""
+twitter api key details
+You can create app on https://developer.twitter.com/
+"""
+
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
+
+"""
+target language of the bot
+check list of available language here : https://developer.twitter.com/en/docs/developer-utilities/supported-languages/api-reference/get-help-languages
+"""
+target_lan = 'en'
+
+"""
+target keywords
+
+"""
+keyword = 'mykeyword'
+
+"""
+define decile (% of tweet to ignore for filtering top tweet)
+should be between 0 and 0.99
+
+"""
+decile = 0.99
+
+#%%
+
+#%%
+
+"""
+load dependency
+"""
+
+import tweepy
+import pandas as pd
+def toDataFrame(tweets):
+
+    DataSet = pd.DataFrame()
+
+    DataSet['tweetID'] = [tweet.id for tweet in tweets]
+    DataSet['tweetText'] = [tweet.text for tweet in tweets]
+    DataSet['tweetRetweetCt'] = [tweet.retweet_count for tweet 
+    in tweets]
+    DataSet['tweetFavoriteCt'] = [tweet.favorite_count for tweet 
+    in tweets]
+    DataSet['tweetSource'] = [tweet.source for tweet in tweets]
+    DataSet['tweetCreated'] = [tweet.created_at for tweet in tweets]
+    DataSet['tweetlang'] = [tweet.lang for tweet in tweets]
+    DataSet['tweetquote'] = [tweet.is_quote_status for tweet in tweets]
+    
+    
+    
+    DataSet['userID'] = [tweet.user.id for tweet in tweets]
+    DataSet['userScreen'] = [tweet.user.screen_name for tweet 
+    in tweets]
+    DataSet['userName'] = [tweet.user.name for tweet in tweets]
+    DataSet['userCreateDt'] = [tweet.user.created_at for tweet 
+    in tweets]
+    DataSet['userDesc'] = [tweet.user.description for tweet in tweets]
+    DataSet['userFollowerCt'] = [tweet.user.followers_count for tweet 
+    in tweets]
+    DataSet['userFriendsCt'] = [tweet.user.friends_count for tweet 
+    in tweets]
+    DataSet['userLocation'] = [tweet.user.location for tweet in tweets]
+    DataSet['userTimezone'] = [tweet.user.time_zone for tweet 
+    in tweets]
+
+    return DataSet
+
+"""
+twitter auto
+"""
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+
+api = tweepy.API(auth)
+#%%
+
+
+#%%
+"""
+search 100 tweet matching keyword
+
+"""
+def searchtwitter(keyword):
+    results = []
+
+    for tweet in tweepy.Cursor(api.search, q=keyword).items(100):
+        results.append(tweet)
+    return results
+    
+ #%%
+
+
+
+#%%
+"""
+ function to filter tweet according alnguage and number of retweet
+"""
+ 
+def mostretweet(DataSet, decile): 
+    
+    """
+    filter according languages_
+    """
+    DataSet_lg= DataSet[DataSet['tweetlang']==target_lan]
+
+    '''
+    get top  tweets
+    '''
+    DataSet_lg = DataSet_lg[DataSet_lg['tweetRetweetCt']>= DataSet_lg.tweetRetweetCt.quantile(decile)]
+    return DataSet_lg
+
+#%%
+ 
+  #%%
+"""
+ function to filter tweet according alnguage and number of retweet
+"""
+ 
+def mostfavorite(DataSet, decile): 
+    
+    """
+    filter according languages_
+    """
+    DataSet_lg= DataSet[DataSet['tweetlang']==target_lan]
+
+    '''
+    get top  tweets
+    '''
+    DataSet_lg = DataSet_lg[DataSet_lg['tweetFavoriteCt']>= DataSet_lg.tweetRetweetCt.quantile(decile)]
+    return DataSet_lg
+
+ #%%
+
+
+#%%
+'''
+ retweet selection
+'''
+def retweet_list(DataSet_lg):
+     for tweet in DataSet_lg['tweetID']:
+         try:
+             api.retweet(tweet)
+         except:
+                 """
+                 if the tweet was already retweeted do nothing
+                 """
+     return
+         
+ 
+#%%
