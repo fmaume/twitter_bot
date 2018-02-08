@@ -1,0 +1,18 @@
+
+
+#%%
+"""
+ example of application
+ requires to run setup
+"""
+results = searchtwitter(keyword)
+DataSet = toDataFrame(results)
+mostfavorited =    mostfavorite(DataSet, decile)    
+mostretweeted = mostretweet(DataSet, decile)
+retweet_list(mostfavorited)
+retweet_list(mostretweeted)
+ 
+#%%
+ 
+ 
+ 
